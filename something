@@ -1,0 +1,29 @@
+import bs4 
+from urllib.request import urlopen as ureq
+from bs4 import BeautifulSoup as soup
+my_url="https://www.amazon.in/s?k=one+plus&rh=n%3A1389401031&ref=nb_sb_noss" #link of Amazon site 
+uclient=ureq(my_url)
+page_html=uclient.read()
+uclient.close()
+pg_soup=soup(page_html,"html.parser")
+containers=pg_soup.findAll("div",{"class":"s-asin"})
+contain=containers[0]
+container=containers[0]
+container.a
+container.div.div.img['alt']
+filename="Products.csv"
+f=open(filename,"w")
+headers="Prduct Name","Price","Total Reviews\n"
+f.write("headers")
+for container in containers:
+    a=container.div.img['alt']
+    b=container.findAll("span",{"class":"a-offscreen"})
+    c=container.findAll("span",{"class":"a-size-base"})
+    print("Product Name:",a)
+    print("Price:",b[0].text.strip())
+    print("Total reviews:",c[0].text.strip())
+
+import pandas as pd #to 
+df = pd.DataFrame({'Product Name':a,'Price':b,'Rating':c}) 
+df.to_csv('products.csv', index=False, encoding='utf-8')
+    
