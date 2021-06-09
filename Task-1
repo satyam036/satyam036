@@ -1,0 +1,18 @@
+status=True
+while status==True:
+    x = input("Enter Something: ")
+    if x=="":
+        print("Please Enter something or press Enter to Exit:")
+        x=input("Enter Something")
+        if x=="":
+            print("Thank You!")
+            break
+    try:
+        if type(eval(x)) == float:
+            print(x, " is floating point number")
+        elif type(eval(x)) == int:
+            print(x, " is integer number")
+        elif type(eval(x)) == bool:
+            print(x, " is a boolean")
+    except:
+        print("That is a string")
