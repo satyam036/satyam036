@@ -1,0 +1,47 @@
+To drop a UDP packet destined for 1234 port, we first need to compile the following BPF code
+
+#include <linux/bpf.h>
+#include <linux/in.h>
+#include <linux/if_ether.h>
+#include <linux/ip.h>
+#include <linux/udp.h>
+ 
+#define SEC(NAME) __attribute__((section(NAME), used))
+ 
+#define htons(x) ((__be16)___constant_swab16((x)))
+ 
+SEC("udp drop")
+int udp_drop(struct xdp_md *ctx) {
+int eth_off = 0;
+ 
+void *data = (void *)(long)ctx->data;
+void *data_end = (void *)(long)ctx->data_end;
+ 
+struct ethhdr *eth = data;
+ 
+eth_off = sizeof(*eth);
+ 
+struct iphdr *ip = data + eth_off;
+struct udphdr *udph = data + eth_off + sizeof(struct iphdr);
+ 
+eth_off += sizeof(struct iphdr);
+if (data + eth_off > data_end) {
+return XDP_PASS;
+}
+ 
+if (ip->protocol == IPPROTO_UDP && udph->dest == htons(1234)) {
+return XDP_DROP;
+}
+ 
+return XDP_PASS;
+}
+ 
+char _license[] SEC("license") = "GPL";
+
+By using following command  
+$ clang -I/usr/include/x86_64-linux-gnu -O2 -target bpf -c udp_drop.c -o udp_drop.o
+
+Then we can attach the bytecode to kernel using this CLI:
+# ip link set dev eth0 xdp obj udp_drop.o sec .text
+At the end we can stop the XDP program just by unloading it
+# ip link set dev eth0 xdp off
